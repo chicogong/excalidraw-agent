@@ -1,0 +1,11 @@
+interface:
+  display_name: "Excalidraw Agent"
+  short_description: "Interactive MCP diagrams with verified local exports"
+  default_prompt: "Use $excalidraw-agent to create an interactive diagram and verified local exports."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "excalidraw"
+      description: "Official Excalidraw MCP App for interactive canvases and checkpoints"
+      transport: "streamable_http"
+      url: "https://mcp.excalidraw.com/mcp"

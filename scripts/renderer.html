@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: transparent;
+      }
+
+      #drawing {
+        display: inline-block;
+      }
+
+      #drawing > svg {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <main id="drawing"></main>
+    <script type="module">
+      try {
+        const module = await import(
+          "https://cdn.jsdelivr.net/npm/@excalidraw/utils@0.1.5/+esm"
+        );
+
+        window.exportScene = async (scene, maxDimension) => {
+          try {
+            const svg = await module.exportToSvg({
+              data: {
+                elements: scene.elements,
+                appState: {
+                  ...(scene.appState || {}),
+                  exportBackground: true,
+                  exportWithDarkMode: false,
+                  viewBackgroundColor:
+                    scene.appState?.viewBackgroundColor || "#ffffff",
+                },
+                files: scene.files || {},
+              },
+              config: { padding: 10 },
+            });
+
+            const width = Number.parseFloat(svg.getAttribute("width")) || 1;
+            const height = Number.parseFloat(svg.getAttribute("height")) || 1;
+            const shrink = Math.min(1, maxDimension / Math.max(width, height));
+            const renderedWidth = Math.max(1, Math.ceil(width * shrink));
+            const renderedHeight = Math.max(1, Math.ceil(height * shrink));
+
+            svg.setAttribute("width", String(renderedWidth));
+            svg.setAttribute("height", String(renderedHeight));
+            document.querySelector("#drawing").replaceChildren(svg);
+
+            return { ok: true, width: renderedWidth, height: renderedHeight };
+          } catch (error) {
+            return { ok: false, error: error?.message || String(error) };
+          }
+        };
+      } catch (error) {
+        window.rendererError =
+          "Could not load pinned @excalidraw/utils from jsDelivr: " +
+          (error?.message || String(error));
+      } finally {
+        window.rendererReady = true;
+      }
+    </script>
+  </body>
+</html>
