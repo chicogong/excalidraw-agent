@@ -9,6 +9,8 @@ An agent skill that connects the official Excalidraw MCP interactive canvas to d
   <img src="examples/mcp-local-export-pipeline.svg" alt="One native Excalidraw scene feeding the interactive MCP canvas and local PNG and SVG exports" width="100%">
 </p>
 
+[Editable source](examples/mcp-local-export-pipeline.excalidraw) · [PNG](examples/mcp-local-export-pipeline.png) · [SVG](examples/mcp-local-export-pipeline.svg)
+
 ## What it connects
 
 ```text
@@ -22,6 +24,8 @@ native .excalidraw scene
 - Export PNG previews and real SVG files from the same source.
 - Restore MCP checkpoints for focused edits without resending the full scene.
 - Detect fidelity gaps when fullscreen edits have not yet been exported locally.
+
+The two branches read the same local scene independently. Agent-authored canvas changes must also be applied to that scene before generating new files.
 
 ## Examples
 
@@ -112,6 +116,8 @@ uv run --project scripts python scripts/test_mcp_payload.py
 ```
 
 Tests cover valid PNG/SVG output, repeatable hashes, native-scene conversion, camera sizing, shorthand rejection, and embedded-file boundaries.
+
+The two workflow figures in this README can be regenerated from [their source script](examples/generate_skill_workflows.py), then exported with `render_excalidraw.py`.
 
 ## Dependencies
 
