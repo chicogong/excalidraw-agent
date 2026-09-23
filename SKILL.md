@@ -13,7 +13,7 @@ Combine the Excalidraw MCP experience with reproducible local artifacts. The MCP
 2. Use real names and evidence for technical diagrams. Do not replace known APIs, events, payloads, or components with generic placeholders.
 3. When the Excalidraw MCP tools are available, call `read_me` once, then use `create_view` to show and iterate on the diagram. Follow the live tool schema because it may be newer than this skill.
 4. When a durable artifact is requested, maintain a native `.excalidraw` scene as the canonical copy. Use `scripts/prepare_mcp_payload.py` to send that scene to `create_view` without changing the local source.
-5. Render the canonical scene with `scripts/render_excalidraw.py` and inspect a PNG preview. Fix clipping, overlaps, weak hierarchy, crossed arrows, and excessive empty space before delivery. Export SVG when the user needs a vector artifact.
+5. Render the canonical scene with `scripts/render_excalidraw.py` and inspect a PNG preview. Also inspect the MCP canvas itself: `create_view` accepting a payload does not prove its text layout matches the local export. Fix clipping, overlaps, weak hierarchy, crossed arrows, and excessive empty space before delivery. Export SVG when the user needs a vector artifact.
 6. Deliver the requested interactive view and, when applicable, both the editable source and verified preview.
 
 ## Choose the State Model
@@ -36,6 +36,8 @@ python {baseDir}/scripts/prepare_mcp_payload.py \
 
 Pass the resulting JSON array as the `elements` argument to `create_view`. The script deliberately rejects MCP shorthand labels and embedded files because those cannot round-trip through the current local renderer without changing semantics.
 
+The MCP viewer forces Excalifont on text and interprets standalone centered text differently from native Excalidraw. The payload preparer repositions unbound centered/right-aligned text for that viewer without changing the source file. Use Excalifont in the native scene when visual parity matters, and inspect the actual MCP view before claiming a match.
+
 For iterative MCP-only edits, retain the returned checkpoint ID and send only:
 
 ```json
@@ -54,7 +56,7 @@ Set up the renderer once:
 
 ```bash
 uv sync --project {baseDir}/scripts
-uv run --project {baseDir}/scripts playwright install chromium
+uv run --project {baseDir}/scripts python -m playwright install chromium
 ```
 
 Render PNG and SVG files:

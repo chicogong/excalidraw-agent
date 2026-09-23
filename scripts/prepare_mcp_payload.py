@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import unicodedata
 from pathlib import Path
 from typing import Any
 
@@ -76,6 +77,48 @@ def validate_elements(elements: list[Any]) -> list[dict[str, Any]]:
     return active
 
 
+def estimated_text_width(value: str, font_size: float) -> float:
+    """Estimate Excalifont's line width for MCP's left-anchored text input."""
+    widths = []
+    for line in value.split("\n"):
+        units = 0.0
+        for character in line:
+            if unicodedata.east_asian_width(character) in {"W", "F"}:
+                units += 1.0
+            elif character in " iljtfr.,:;!|\u2019'`":
+                units += 0.34
+            elif character in "MW@#%&":
+                units += 0.8
+            else:
+                units += 0.55
+        widths.append(units * font_size)
+    return max(widths, default=0.0)
+
+
+def adapt_text_for_mcp(element: dict[str, Any]) -> dict[str, Any]:
+    """Keep native text positioning out of MCP's shorthand alignment rules."""
+    if element.get("type") != "text" or element.get("containerId"):
+        return element
+    alignment = element.get("textAlign", "left")
+    if alignment not in {"center", "right"}:
+        return element
+
+    width = float(element.get("width", 0))
+    if width <= 0:
+        return element
+    text_width = estimated_text_width(str(element.get("text", "")), float(element.get("fontSize", 20)))
+    x = float(element.get("x", 0))
+    if alignment == "center":
+        x += (width - text_width) / 2
+    else:
+        x += width - text_width
+
+    adapted = dict(element)
+    adapted["x"] = round(x, 2)
+    adapted["textAlign"] = "left"
+    return adapted
+
+
 def automatic_camera(elements: list[dict[str, Any]], padding: int) -> dict[str, Any]:
     bounds = [element_bounds(element) for element in elements]
     min_x = min(bound[0] for bound in bounds) - padding
@@ -107,7 +150,8 @@ def automatic_camera(elements: list[dict[str, Any]], padding: int) -> dict[str, 
 
 def build_payload(scene: dict[str, Any], padding: int) -> list[dict[str, Any]]:
     elements = validate_elements(scene["elements"])
-    return [automatic_camera(elements, padding), *elements]
+    adapted = [adapt_text_for_mcp(element) for element in elements]
+    return [automatic_camera(adapted, padding), *adapted]
 
 
 def parse_args() -> argparse.Namespace:

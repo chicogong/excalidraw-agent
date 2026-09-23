@@ -67,7 +67,7 @@ class Diagram:
             strokeWidth=1,
             text=value,
             fontSize=size,
-            fontFamily=2,
+            fontFamily=5,
             textAlign=align,
             verticalAlign="top",
             containerId=None,

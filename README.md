@@ -27,6 +27,8 @@ native .excalidraw scene
 
 The two branches read the same local scene independently. Agent-authored canvas changes must also be applied to that scene before generating new files.
 
+The MCP canvas reinterprets standalone text alignment and uses Excalifont. The payload preparer adjusts centered text positions for MCP, and the two workflow examples use Excalifont in their local sources. Always inspect the interactive canvas as well as the exported image when checking visual parity.
+
 ## Examples
 
 ### Agent tool-call loop
@@ -59,7 +61,7 @@ Set up local rendering:
 ```bash
 uv sync --project .agents/skills/excalidraw-agent/scripts
 uv run --project .agents/skills/excalidraw-agent/scripts \
-  playwright install chromium
+  python -m playwright install chromium
 ```
 
 For the interactive canvas, connect an MCP Apps-compatible client to:
@@ -110,7 +112,7 @@ See [the MCP workflow](references/mcp-workflow.md) and [scene recovery guide](re
 
 ```bash
 uv sync --project scripts --locked
-uv run --project scripts playwright install chromium
+uv run --project scripts python -m playwright install chromium
 uv run --project scripts python scripts/test_renderer.py
 uv run --project scripts python scripts/test_mcp_payload.py
 ```

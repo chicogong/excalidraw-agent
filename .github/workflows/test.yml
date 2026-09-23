@@ -14,6 +14,6 @@ jobs:
         with:
           python-version: "3.12"
       - run: uv sync --project scripts --locked
-      - run: uv run --project scripts playwright install --with-deps chromium
+      - run: uv run --project scripts python -m playwright install --with-deps chromium
       - run: uv run --project scripts python scripts/test_renderer.py
       - run: uv run --project scripts python scripts/test_mcp_payload.py

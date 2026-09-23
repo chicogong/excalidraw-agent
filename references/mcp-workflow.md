@@ -25,8 +25,8 @@ Use this flow when the user needs files or repeatable export:
 
 1. Create or update a native `.excalidraw` document locally.
 2. Avoid the MCP `label` shorthand; represent labels as native text/binding elements so the MCP view and local renderer share the same scene semantics.
-3. Run `prepare_mcp_payload.py` to prepend a camera and produce the JSON array expected by `create_view`.
-4. Show the interactive MCP view and retain its returned checkpoint only for this task.
+3. Run `prepare_mcp_payload.py` to prepend a camera, adapt standalone text alignment, and produce the JSON array expected by `create_view`.
+4. Show and visually inspect the interactive MCP view; receiving a checkpoint ID alone is not a layout check. Retain the checkpoint only for this task.
 5. Apply agent-authored changes to the local source as well as the checkpoint.
 6. Render the local source and visually inspect the PNG.
 
@@ -45,6 +45,7 @@ Use this flow when the user mainly wants to explore or iterate in chat:
 ## Fidelity limits
 
 - Screenshot feedback is useful for visual review but cannot recover element IDs, bindings, or full styling.
+- The MCP viewer forces Excalifont for text. Use the same font in the local source when visual parity matters, and check placement after conversion.
 - The widget's edit context reports a compact change summary; it is not a complete scene serialization.
 - Embedded image/file payloads do not fit the elements-only `create_view` input and require a separate supported transfer path.
 - Checkpoints may expire or be unavailable after service/session changes. Keep durable work in a local source file.

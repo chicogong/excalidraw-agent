@@ -67,6 +67,58 @@ def main() -> None:
         if payload[1]["id"] != "box":
             raise SystemExit("native element order was not preserved")
 
+        centered_text = {
+            "id": "centered",
+            "type": "text",
+            "x": 100,
+            "y": 120,
+            "width": 200,
+            "height": 30,
+            "text": "Hello",
+            "fontSize": 20,
+            "textAlign": "center",
+            "containerId": None,
+        }
+        input_path.write_text(json.dumps(scene([rectangle(), centered_text])), encoding="utf-8")
+        result = run(input_path, output_path)
+        if result.returncode != 0:
+            raise SystemExit(result.stderr)
+        payload = json.loads(output_path.read_text(encoding="utf-8"))
+        converted = payload[2]
+        if converted["textAlign"] != "left" or not 160 < converted["x"] < 200:
+            raise SystemExit("centered native text was not placed for MCP rendering")
+        if centered_text["textAlign"] != "center" or centered_text["x"] != 100:
+            raise SystemExit("MCP conversion changed the source text")
+
+        examples = HERE.parent / "examples"
+        labeled_boxes = {
+            "mcp-local-export-pipeline": {
+                "scene-title": "scene",
+                "payload-title": "payload",
+                "view-title": "view",
+                "renderer-title": "renderer",
+                "files-title": "files",
+            },
+            "checkpoint-iteration": {
+                "initial-title": "initial",
+                "checkpoint-title": "checkpoint-one",
+                "restore-title": "restore-edit",
+                "updated-title": "updated",
+                "mirror-title": "mirror",
+                "scene-title": "scene",
+                "export-title": "export",
+            },
+        }
+        for example_name, pairs in labeled_boxes.items():
+            result = run(examples / f"{example_name}.excalidraw", output_path)
+            if result.returncode != 0:
+                raise SystemExit(result.stderr)
+            by_id = {element["id"]: element for element in json.loads(output_path.read_text(encoding="utf-8"))[1:]}
+            for text_id, box_id in pairs.items():
+                title, box = by_id[text_id], by_id[box_id]
+                if title["textAlign"] != "left" or not box["x"] < title["x"] < box["x"] + box["width"]:
+                    raise SystemExit(f"{example_name}: {text_id} is not anchored inside {box_id}")
+
         labeled = rectangle("labeled")
         labeled["label"] = {"text": "not native"}
         input_path.write_text(json.dumps(scene([labeled])), encoding="utf-8")
